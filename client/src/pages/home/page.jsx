@@ -8,7 +8,7 @@ import AddPostModal from "../../components/addPostModal"
 
 function Home() {
 
-    const [showAddPostModal, setShowAddPostModal] = useState(true)
+    const [showAddPostModal, setShowAddPostModal] = useState(false)
 
     const toggleAddPostModal = () => {
         setShowAddPostModal(!showAddPostModal)
