@@ -1,10 +1,19 @@
 import { useState } from "react"
 
 // icons
-import { X, Image, Heart, MessageSquare } from "lucide-react"
+import { Image } from "lucide-react"
 
 // components 
 import AddPostModal from "../../components/addPostModal"
+import PostCard from "../../components/postCard"
+
+const Post = {
+    username: "Rakotondrafara Miantsa Fanirina",
+    description: "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Temporibus pariatur velit vel excepturi rerum optio quod minima voluptate voluptates, nobis eaque facere quos, tempore molestias aut libero id corporis iusto doloribus, nesciunt quia assumenda enim. Voluptate provident voluptatem delectus possimus. Eius soluta fugit reiciendis veritatis quo ab repudiandae magnam explicabo iste rem eaque maxime, iure minima facere sed. Qui incidunt adipisci numquam unde id ratione explicabo sequi libero deserunt dolores! Est earum voluptate provident molestias voluptatem aliquid tempora officia quos sunt consequatur illum recusandae minus dolores amet eum numquam molestiae dolorum, blanditiis ipsa repudiandae doloremque doloribus quae modi. Molestiae, quidem!",
+    isLiked: true,
+    createdAt: "2m",
+    viewers: "Eliot, Monja et 345 autres"
+}
 
 function Home() {
 
@@ -14,24 +23,9 @@ function Home() {
         setShowAddPostModal(!showAddPostModal)
     }
 
-    const [isLiked, setIsLiked] = useState(false)
-
-    const toggleLike = () => {
-        setIsLiked(!isLiked)
-    }
-
+    
     const toggleDarkMode = () => {
         document.documentElement.classList.toggle("dark")
-    }
-
-    const initialDescription =
-    "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Asperiores perferendis nulla sapiente ad earum dignissimos, consectetur cupiditate sed adipisci totam! Facilis ullam nam, quae animi pariatur impedit optio sed, adipisci veritatis, nihil sunt aut quasi excepturi vel obcaecati expedita error dolorem consequatur nisi temporibus earum nobis saepe harum in. Optio molestiae dolorum voluptatem in nostrum veritatis sed accusamus autem doloribus repellat voluptatum tempora non magni minus iste distinctio porro ipsa earum molestias et, veniam suscipit libero quasi. Corrupti, distinctio placeat!"
-    const sliceDescription = initialDescription.slice(0, 150)
-
-    const [showFullDescription, setShowFullDescription] = useState(false)
-
-    const toggleDescription = () => {
-        setShowFullDescription(!showFullDescription)
     }
 
     return (
@@ -62,78 +56,9 @@ function Home() {
 
             </div>
 
-            {/* card */}
-            <div className="md:w-[768px] w-full bg-white dark:bg-slate-900 md:rounded md:shadow flex flex-col mb-8">
-                
-                {/* card-header */}
-                <div className="flex justify-between mx-10 mt-10 mb-6">
-
-                    {/* profile section */}
-                    <div className="flex">
-                        <div className="bg-slate-500 w-[40px] h-[40px] rounded-full"></div>
-                        <div className="ml-4 flex flex-col justify-center">
-                            <h1 className="font-semibold text-lg dark:text-slate-50">Rakotondrafara Miantsa Fanirina</h1>
-                            <p className="text-sm text-slate-500">2m</p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-center text-slate-500 w-10 h-10 rounded-full hover:bg-slate-100 cursor-pointer">
-                        <X />
-                    </div>                
-
-                </div>
-                
-                {/* description */}
-                <p className="flex flex-col mb-10 mx-10 dark:text-slate-300">
-
-                    {showFullDescription ? initialDescription : sliceDescription}
-                    {!showFullDescription ? (
-                        <span
-                            className="text-pink-500 cursor-pointer"
-                            onClick={toggleDescription}
-                        >
-                            voir plus...
-                        </span>
-                    ) : (
-                        <span
-                            className="text-pink-500 cursor-pointer"
-                            onClick={toggleDescription}
-                        >
-                            voir moins
-                        </span>
-                        )
-                    }
-                </p>
-
-                {/* image section */}
-                <div className="w-full h-[500px] min-h-[320px] max-h-[300px] bg-slate-500 mb-6 overflow-hidden"></div>
-
-                {/* like section */}
-                <div className="w-full px-10 mb-6 flex items-center">
-                    <Heart size={16} className="text-slate-500"/> 
-                    <p className="ml-2 text-sm text-slate-500">Miantsa Fanirina, Monja et 6 autres</p>
-                </div>
-                
-                <hr className="mb-6"/>
-
-                {/* action section */}
-                <div className="w-full px-10 mb-6 flex items-center justify-center ">
-
-                    {/* like button */}
-                    <button onClick={toggleLike} className={`px-24 py-3 mx-3 hover:bg-slate-200 dark:hover:bg-slate-500 rounded-md cursor-pointer flex items-center content-center ${isLiked ? "text-pink-500" : "dark:text-slate-300"}`}>
-                        <Heart size={16}/>
-                        <h3 className="ml-2 text-sm">J'aime</h3> 
-                    </button>
-                    
-                    {/* comment button */}
-                    <button className="px-24 py-3 mx-3 hover:bg-slate-200 dark:hover:bg-slate-500 dark:text-slate-300 rounded-md cursor-pointer flex items-center content-center">
-                        <MessageSquare size={16}/>
-                        <h3 className="ml-2 text-sm">Commenter</h3> 
-                    </button>
-
-                </div>
-
-            </div>
+            {/* Posts card */}
+            <PostCard Post={Post}/>
+            
 
             {showAddPostModal && <AddPostModal toggleAddPostModal={toggleAddPostModal}/>}
         </div>
