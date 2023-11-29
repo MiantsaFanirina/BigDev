@@ -1,9 +1,18 @@
 import { useState } from "react"
 
 // icons
-import { X, ThumbsUp, MessageSquare } from "lucide-react"
+import { X, Image, Heart, MessageSquare } from "lucide-react"
+
+// components 
+import AddPostModal from "../../components/addPostModal"
 
 function Home() {
+
+    const [showAddPostModal, setShowAddPostModal] = useState(true)
+
+    const toggleAddPostModal = () => {
+        setShowAddPostModal(!showAddPostModal)
+    }
 
     const [isLiked, setIsLiked] = useState(false)
 
@@ -30,15 +39,38 @@ function Home() {
 
             <button onClick={toggleDarkMode} className="text-white absolte right-0 top-0">Switch dark mode</button>
 
+            {/* add post */}
+            <div className="px-10 md:w-[768px] w-full h-auto md:rounded md:shadow mb-8 dark:bg-slate-900 bg-white flex flex-col">
+                
+                {/* add form */}
+                <div className="flex mt-8">
+                    <div className="bg-slate-500 w-[40px] h-[40px] rounded-full mr-5"></div>
+                    <button onClick={toggleAddPostModal} className=" w-full text-left dark:bg-slate-600 dark:hover:bg-slate-500 dark:text-slate-900 bg-slate-200 hover:bg-slate-300 px-5 rounded-full">Quoi de neuf ?</button>
+                </div>
+                
+                <hr className="mt-3"/>
+
+                {/* add photo */}
+                <div className="flex justify-center items-center py-3">
+
+                    <button onClick={toggleAddPostModal} className="px-24 py-3 mx-3 hover:bg-slate-200 dark:hover:bg-slate-500 dark:text-slate-300 rounded-md cursor-pointer flex items-center content-center">
+                        <Image className="text-pink-500"/>
+                        <h3 className="ml-2 text-sm">Photo/Video</h3> 
+                    </button>
+
+                </div>
+
+            </div>
+
             {/* card */}
-            <div className="md:w-[768px] w-full bg-white dark:bg-slate-900 md:rounded md:shadow flex flex-col">
+            <div className="md:w-[768px] w-full bg-white dark:bg-slate-900 md:rounded md:shadow flex flex-col mb-8">
                 
                 {/* card-header */}
                 <div className="flex justify-between mx-10 mt-10 mb-6">
 
                     {/* profile section */}
                     <div className="flex">
-                        <div className="bg-slate-500 w-16 h-16 rounded-full"></div>
+                        <div className="bg-slate-500 w-[40px] h-[40px] rounded-full"></div>
                         <div className="ml-4 flex flex-col justify-center">
                             <h1 className="font-semibold text-lg dark:text-slate-50">Rakotondrafara Miantsa Fanirina</h1>
                             <p className="text-sm text-slate-500">2m</p>
@@ -78,7 +110,7 @@ function Home() {
 
                 {/* like section */}
                 <div className="w-full px-10 mb-6 flex items-center">
-                    <ThumbsUp size={16} className="text-slate-500"/> 
+                    <Heart size={16} className="text-slate-500"/> 
                     <p className="ml-2 text-sm text-slate-500">Miantsa Fanirina, Monja et 6 autres</p>
                 </div>
                 
@@ -89,7 +121,7 @@ function Home() {
 
                     {/* like button */}
                     <button onClick={toggleLike} className={`px-24 py-3 mx-3 hover:bg-slate-200 dark:hover:bg-slate-500 rounded-md cursor-pointer flex items-center content-center ${isLiked ? "text-pink-500" : "dark:text-slate-300"}`}>
-                        <ThumbsUp size={16}/>
+                        <Heart size={16}/>
                         <h3 className="ml-2 text-sm">J'aime</h3> 
                     </button>
                     
@@ -102,6 +134,8 @@ function Home() {
                 </div>
 
             </div>
+
+            {showAddPostModal && <AddPostModal toggleAddPostModal={toggleAddPostModal}/>}
         </div>
     )
 }
