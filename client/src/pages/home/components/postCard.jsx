@@ -5,9 +5,19 @@ import { X, Heart, MessageSquare } from "lucide-react"
 
 // service
 import { getUserById } from "../../../services/users.service";
+import { createLike, deleteLike, getLikesByPostId, isPostLikeByAUser } from '../../../services/like.service';
+
+// fromat
+import { formaterDate } from '../../../utils/format';
+
+// context
+import { UserContext } from '../../../context/userContext';
 
 export default function postCard({post}) { 
     
+    // current user
+    const { user } = useContext(UserContext)
+
     // get the post user
     const getUser = async () => {
         const user = await getUserById(post.user_id)
@@ -26,13 +36,33 @@ export default function postCard({post}) {
     const initialDescription = post.description
 
     // states
-    const [isLiked, setIsLiked] = useState(true)
+    const [isLiked, setIsLiked] = useState()
+
+    // lifecycle
+    useEffect(() => {
+        const checkIsLiked = async () => {
+            const isLiked = await isPostLikeByAUser(post.id, user.id)
+            console.log(post.id + " " + isLiked.isLiked)
+            setIsLiked(isLiked.isLiked)
+        }
+        checkIsLiked()
+    }, [user, post])
+
     const [showFullDescription, setShowFullDescription] = useState(false)
 
     /**** interactions ****/
     // like
     const toggleLike = () => {
-        setIsLiked(!isLiked)
+        if(!isLiked) {
+            const like = createLike(post.id, user.id)
+            console.log(like)
+            setIsLiked(!isLiked)
+        }
+        else {
+            const like = deleteLike(post.id, user.id)
+            console.log(like)
+            setIsLiked(!isLiked)
+        }
     }
 
     // see more
@@ -57,7 +87,7 @@ export default function postCard({post}) {
                     <div className="bg-slate-500 w-[40px] h-[40px] rounded-full"></div>
                     <div className="ml-4 flex flex-col justify-center">
                         <h1 className="font-semibold text-lg dark:text-slate-50">{postUser?.name}</h1>
-                        <p className="text-sm text-slate-500">{post.createdAt}</p>
+                        <p className="text-sm text-slate-500">publié le {formaterDate(post.createdAt)}</p>
                     </div>
                 </div>
 

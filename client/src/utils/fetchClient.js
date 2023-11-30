@@ -38,7 +38,7 @@ export const updateData = async (endpoint, id, data) => {
 };
 
 // Function to delete data through the API
-export const deleteData = async (endpoint, id) => {
+export const deleteData = async (endpoint) => {
   const options = {
     method: 'DELETE',
     headers: {
@@ -47,6 +47,6 @@ export const deleteData = async (endpoint, id) => {
     },
   };
 
-  const response = await fetch(`${API_URL}/${endpoint}/${id}`, options);
+  const response = await fetch(`${API_URL}/${endpoint}`, options);
   return response.json();
 };

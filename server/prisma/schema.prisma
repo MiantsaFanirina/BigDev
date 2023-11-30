@@ -72,10 +72,9 @@ model Comment {
 
 // Represents a like on a post
 model Like {
-  user       User    @relation(fields: [user_id], references: [id])
-  user_id    String
-  post    Post @relation(fields: [post_id], references: [id])
-  post_id String
-
-  @@id([user_id, post_id])
+  id        String @id @default(uuid())
+  user      User   @relation(fields: [user_id], references: [id])
+  user_id   String
+  post      Post   @relation(fields: [post_id], references: [id])
+  post_id   String
 }
