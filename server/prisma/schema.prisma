@@ -10,24 +10,49 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Represents a user in the system
 model User {
-  id       String @id @default(uuid())
-  name     String 
-  password String
-  comments Comment[]
-  posts    Post[]
+  id                  String   @id @default(uuid())
+  name                String   @unique
+  password            String
+  profile_picture_url String
+  comments            Comment[]
+  likes               Like[]
+  posts               Post[]
+  notifications       Notification[]
 }
 
+// Represents a notification for a user
+model Notification {
+  id        String   @id @default(uuid())
+  message   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id   String
+}
+
+
+
+// Represents a post in the system
 model Post {
-  id       String @id @default(uuid())
-  title    String
-  bidy     String
-  comments Comment[]
-  author   User   @relation(fields: [user_id], references: [id])
-  user_id  String
-  Likes     Like[]
+  id          String   @id @default(uuid())
+  description String
+  comments    Comment[]
+  media       Media[]
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id     String
 }
 
+// Represents media associated with a post
+model Media {
+  id   String @id @default(uuid())
+  src  String 
+  post Post   @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  post_id String
+}
+
+
+// Represents a comment on a post
 model Comment {
   id        String    @id @default(uuid())
   message   String
@@ -43,12 +68,13 @@ model Comment {
   likes     Like[]
 }
 
+
+// Represents a like on a comment
 model Like {
-  post       Post    @relation(fields: [post_id], references: [id])
-  post_id    String
+  user       User    @relation(fields: [user_id], references: [id])
+  user_id    String
   comment    Comment @relation(fields: [comment_id], references: [id])
   comment_id String
 
-
-  @@id([post_id, comment_id])
+  @@id([user_id, comment_id])
 }

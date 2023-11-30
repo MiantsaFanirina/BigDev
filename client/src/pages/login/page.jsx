@@ -1,8 +1,24 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
+// JWT
+import Cookies from 'js-cookie'
+
+// service
+import { authenticateUser } from '../../services/users.service'
+
+// utils
+import { capitalizeString } from '../../utils/format';
+
 function Login() {
+
+    // error handler state
+    const [errorMessage, setErrorMessage] = useState(null)
+
+
+  // history 
+  const history = useNavigate()
 
   const [formData, setFormData] = useState({
     username: "",
@@ -16,6 +32,35 @@ function Login() {
     })
   }
 
+  // authenticate user
+  const authUser = async (e) => {
+    e.preventDefault()
+    const { username, password } = formData
+    const response = await authenticateUser({name: capitalizeString(username), password})
+
+    if(response.token)
+    {
+
+      // set the token in the cookies
+      Cookies.set('token', response.token, { expires: 30 })
+      Cookies.set('user_id', response.id, { expires: 30 })
+      
+      history('/')
+    }
+    else
+    {
+      console.log(response)
+      setErrorMessage("Le nom d'utilisateur ou le mot de passe est incorrect")
+    }
+
+  }
+
+  useEffect(() => {
+    const token = Cookies.get('token')
+    if (token && token != "undefined") {
+      history('/')
+    }
+  }, [])
 
   return (
     <>
@@ -66,7 +111,9 @@ function Login() {
             </label>
           </div>
 
-          <button className="w-full h-11 bg-slate-900 text-white font-semibold rounded hover:bg-slate-800 mb-3">Se connecter</button>
+          {errorMessage === null ? <></> : <span className="text-center text-pink-500 mb-6">{errorMessage}</span>}
+
+          <button onClick={authUser} className="w-full h-11 bg-slate-900 text-white font-semibold rounded hover:bg-slate-800 mb-3">Se connecter</button>
 
           <p className="text-sm">Vous n'avez pas de compte ? <Link to="/register" className="text-blue-500">S'inscrire</Link></p>
         </div>

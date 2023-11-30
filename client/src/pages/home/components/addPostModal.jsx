@@ -1,32 +1,68 @@
 import {useState} from 'react'
 import { createPortal } from 'react-dom'
+import { motion } from 'framer-motion'
 
 // icons
 import { X, ImageDown } from 'lucide-react'
 
 
 // modal component
-export default function AddPostModal({toggleAddPostModal}) {
+export default function AddPostModal({ toggleAddPostModal }) {
+  // states
+  const [textareaValue, setTextareaValue] = useState('')
+  const [images, setImages] = useState(null)
+
+  const postPost = () => {
+    const data = {
+      description: textareaValue,
+      medias: images,
+    }
+    toggleAddPostModal()
+  }
+
+  const isPublishDisabled = !textareaValue.trim() && !images
+
   return createPortal(
     <div className="w-full h-screen bg-slate-50 dark:bg-black dark:bg-opacity-50 bg-opacity-80 z-50 absolute top-0 left-0 flex items-center justify-center">
-        <div className="bg-white dark:bg-slate-900 md:shadow w-full md:w-[520px] md:h-auto h-full md:overflow-y-scroll md:overflow-x-hidden p-10 rounded overflow-hidden">
+      <motion.div
 
-            <ModalHeader toggleAddPostModal={toggleAddPostModal}/>
+        // animations
+        initial={{ opacity: 0, scale: 0 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.1 }}
 
-            <hr className="mt-8" />
+        className="bg-white dark:bg-slate-900 md:shadow w-full md:w-[520px] md:h-auto h-full md:overflow-y-scroll md:overflow-x-hidden p-10 rounded overflow-hidden"
+        >
 
-            <ProfileSection />
+        <ModalHeader toggleAddPostModal={toggleAddPostModal} />
 
-            <div className="max-h-[400px] overflow-y-scroll">
-                <FormSection />
-            </div>
+        <hr className="mt-8" />
 
-            <button onClick={toggleAddPostModal} className="w-full mt-6 bg-slate-400 dark:bg-slate-800 hover:dark:bg-slate-700 hover:bg-slate-600 text-white py-3 rounded">publier</button>
+        <ProfileSection />
+
+        <div className="max-h-[400px] overflow-y-scroll">
+          <FormSection
+            images={images}
+            setImages={setImages}
+            textareaValue={textareaValue}
+            setTextareaValue={setTextareaValue}
+          />
         </div>
-    </div>
-  , document.body)
-}
 
+        <button
+          onClick={postPost}
+          className={`w-full mt-6 bg-slate-500 dark:bg-slate-800 ${
+            isPublishDisabled ? 'opacity-50 cursor-default' : 'hover:dark:bg-slate-700 hover:bg-slate-600'
+          } text-white py-3 rounded`}
+          disabled={isPublishDisabled}
+        >
+          publier
+        </button>
+      </motion.div>
+    </div>,
+    document.body
+  )
+}
 
 // Modal Header
 function ModalHeader({toggleAddPostModal}) {
@@ -53,11 +89,7 @@ function ProfileSection() {
 
 
 // Form post
-function FormSection() {
-
-
-  const [textareaValue, setTextareaValue] = useState('')
-  const [images, setImages] = useState(null)
+function FormSection({images, setImages, textareaValue, setTextareaValue}) {
 
   const handleTextareaChange = (event) => {
     setTextareaValue(event.target.value)
@@ -137,10 +169,10 @@ function FormSection() {
       
       {!images ?
           (<label
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-          htmlFor="fileInput"
-          className="w-full h-[300px] border-[1px] dark:border-slate-600 rounded-lg p-3 flex items-center justify-center cursor-pointer"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            htmlFor="fileInput"
+            className="w-full h-[300px] border-[1px] dark:border-slate-600 rounded-lg p-3 flex items-center justify-center cursor-pointer"
           >
               <input
                   type="file"

@@ -1,11 +1,17 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+
+// navigation
+import { useNavigate } from 'react-router-dom'
 
 // icons
 import { Image } from "lucide-react"
 
 // components 
-import AddPostModal from "../../components/addPostModal"
-import PostCard from "../../components/postCard"
+import AddPostModal from "./components/addPostModal"
+import PostCard from "./components/postCard"
+
+// Utils
+import Cookies from 'js-cookie'
 
 const Post = {
     username: "Rakotondrafara Miantsa Fanirina",
@@ -16,6 +22,8 @@ const Post = {
 }
 
 function Home() {
+    // navigation
+    const history = useNavigate()
 
     const [showAddPostModal, setShowAddPostModal] = useState(false)
 
@@ -27,6 +35,16 @@ function Home() {
     const toggleDarkMode = () => {
         document.documentElement.classList.toggle("dark")
     }
+
+    // lifecycle
+  useEffect(() => {
+        const token = Cookies.get('token')
+    
+        if (token === undefined) {
+            // Redirect the user to "/"
+            history('/login')
+        }
+    }, [])
 
     return (
         <div className="w-full h-full flex flex-col items-center md:p-10 p-4 overflow-x-hidden overflow-y-scroll relative">
@@ -60,7 +78,7 @@ function Home() {
             <PostCard Post={Post}/>
             
 
-            {showAddPostModal && <AddPostModal toggleAddPostModal={toggleAddPostModal}/>}
+            {showAddPostModal && <AddPostModal toggleAddPostModal={toggleAddPostModal} />}
         </div>
     )
 }

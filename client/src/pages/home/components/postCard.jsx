@@ -94,15 +94,15 @@ export default function PostCard({Post}) {
             <div className="w-full px-10 mb-6 flex items-center justify-center ">
 
                 {/* like button */}
-                <button onClick={toggleLike} className={`px-24 py-3 mx-3 hover:bg-slate-200 dark:hover:bg-slate-500 rounded-md cursor-pointer flex items-center content-center ${isLiked ? "text-pink-500" : "dark:text-slate-300"}`}>
+                <button onClick={toggleLike} className={`md:px-24 px-10 py-3 mx-3 md:hover:bg-slate-200 md:dark:hover:bg-slate-500 rounded-md cursor-pointer flex items-center content-center ${isLiked ? "text-pink-500" : "dark:text-slate-300"}`}>
                     <Heart size={16}/>
                     <h3 className="ml-2 text-sm">J'aime</h3> 
                 </button>
                 
                 {/* comment button */}
-                <button className="px-24 py-3 mx-3 hover:bg-slate-200 dark:hover:bg-slate-500 dark:text-slate-300 rounded-md cursor-pointer flex items-center content-center">
+                <button className="md:px-24 px-10 py-3 mx-3 hover:bg-slate-200 md:dark:hover:bg-slate-500 md:dark:text-slate-300 rounded-md cursor-pointer flex items-center content-center">
                     <MessageSquare size={16}/>
-                    <h3 className="ml-2 text-sm">Commenter</h3> 
+                    <h3 className="ml-2 text-sm">Commentaires</h3> 
                 </button>
 
             </div>

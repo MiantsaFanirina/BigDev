@@ -1,23 +1,68 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion' 
-function Register() {
+
+import { useNavigate } from 'react-router-dom'
+
+// Services
+import { createUser } from '../../services/users.service'
+
+// Utils
+import { capitalizeString } from '../../utils/format'
+import Cookies from 'js-cookie'
+
+
+export default function Register() {
+  // navigation
+  const history = useNavigate()
+
+  // error handler state
+  const [errorMessage, setErrorMessage] = useState(null)
 
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   })
 
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true)
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     })
+
+    // Check if either username or password is empty
+    setIsButtonDisabled(formData.username === "" || formData.password === "")
   }
 
+  const registerUser = async () => {
+    const { username, password } = formData
+  
+   
+    const response = await createUser({ username: capitalizeString(username), password })
+
+
+    if (response.token) {
+      Cookies.set('token', response.token, { expires: 30 })
+      history('/')
+    }
+    else {
+      setErrorMessage("Le nom d'utilisateur a déja été pris")
+    }
+  }
+
+  // lifecycle
+  useEffect(() => {
+    const token = Cookies.get('token')
+    if(token) {
+      history('/')
+    }
+  }, [])
 
   return (
     <>
+    {console.log(errorMessage)}
       <motion.div
 
         // animation
@@ -65,8 +110,16 @@ function Register() {
             </label>
           </div>
 
-          <button className="md:px-0 md:w-full px-5 h-11 bg-slate-900 text-white font-semibold rounded hover:bg-slate-800 mb-3">Se connecter</button>
-          
+          {errorMessage === null ? <></> : <span className="text-center text-pink-500 mb-6">{errorMessage}</span>}
+
+          <button
+            onClick={() => registerUser()}
+            className={`md:px-0 md:w-full px-5 h-11 bg-slate-900 text-white font-semibold rounded mb-3 ${isButtonDisabled ? 'opacity-50 cursor-default' : 'hover:bg-slate-800'}`}
+            disabled={isButtonDisabled}
+          >
+            S'inscrire
+          </button>
+
           <p className="text-sm">Vous avez déja un compte ? <Link to="/login" className="text-blue-500">Se connecter</Link></p>
           
         </div>
@@ -75,4 +128,3 @@ function Register() {
   )
 }
 
-export default Register
