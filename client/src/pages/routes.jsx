@@ -10,6 +10,7 @@ import Home from './home/page'
 
 // userContext
 import {UserProvider} from '../context/userContext'
+import {WebSocketProvider} from '../context/WebSocketContext'
 
 function MainRoutes() {
   return (
@@ -20,9 +21,12 @@ function MainRoutes() {
         
       </Routes>
       <UserProvider>
-        <Routes>
-          <Route index path="/" element={<Home />}/>
-        </Routes>
+        <WebSocketProvider>
+          <Routes>
+            <Route index path="/" element={<Home />}/>
+          </Routes>
+
+        </WebSocketProvider>
       </UserProvider>
     </>
   )

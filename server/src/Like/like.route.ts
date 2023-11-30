@@ -1,10 +1,32 @@
 import express from "express";
 import type {Request, Response} from "express";
+import WebSocket from 'ws';
 
 // service
 import * as LikeService from "./like.service";
 
 const likeRouter = express.Router();
+let wss: WebSocket.Server;
+
+// Broadcast like update function
+export const broadcastLikeUpdate = async (postId: string, isLiked: boolean) => {
+    try {
+        const likes = await LikeService.getLikeByPostId(postId);
+        const update = {
+            postId,
+            isLiked,
+            likeCount: likes.length,
+        };
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify(update));
+            }
+        });
+    } catch (err) {
+        console.error('Error broadcasting like update:', err);
+    }
+};
+
 
 // get all likes
 likeRouter.get("/likes", async (req: Request, res: Response) => {
@@ -26,12 +48,16 @@ likeRouter.get("/likes/:id", async (req: Request, res: Response) => {
     }
 });
 
-//create likes with postId and userId params from the url
+// create likes with postId and userId params from the url
 likeRouter.post("/likes/:postId/:userId", async (req: Request, res: Response) => {
     const postId = req.params.postId;
     const userId = req.params.userId;
-    try{
-        const like = await LikeService.createLike({post_id: postId.toString(), user_id: userId.toString()});
+    try {
+        const like = await LikeService.createLike({ post_id: postId.toString(), user_id: userId.toString() });
+
+        // Broadcast like update to all connected clients
+        broadcastLikeUpdate(postId, true);
+
         res.status(201).json(like);
     } catch (err: any) {
         res.status(500).json(err.message);
@@ -61,12 +87,15 @@ likeRouter.get("/likes/:postId/:userId", async (req: Request, res: Response) => 
 likeRouter.delete("/likes/:postId/:userId", async (req: Request, res: Response) => {
     const postId = req.params.postId;
     const userId = req.params.userId;
-    try{
+    try {
         await LikeService.deleteLike(userId, postId);
-        res.status(200).json({message: "Like deleted", confirmation: true});
+
+        // Broadcast like update to all connected clients
+        broadcastLikeUpdate(postId, false);
+
+        res.status(200).json({ message: "Like deleted", confirmation: true });
     } catch (err: any) {
         res.status(500).json(err.message);
     }
 });
-
 export {likeRouter} 

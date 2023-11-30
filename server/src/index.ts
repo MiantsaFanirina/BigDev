@@ -1,16 +1,15 @@
-// index.ts
 import * as dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
+import http from 'http';
+import WebSocket, { WebSocketServer } from "ws";
 import os from 'os';
 
-
-// router
+// Import your routers
 import { userRouter } from './User/user.router';
 import { postRouter } from './Post/post.router';
 import { likeRouter } from './Like/like.route';
 
-// config
 dotenv.config();
 
 if (!process.env.PORT) {
@@ -20,9 +19,17 @@ if (!process.env.PORT) {
 const PORT: number = parseInt(process.env.PORT);
 const app = express();
 
-// cors
+// Create an HTTP server
+const server = http.createServer(app);
+
+// Create a WebSocket server
+const wss = new WebSocketServer({
+    port: 8080,
+});
+
+// CORS middleware
 app.use(cors({
-    origin : process.env.CLIENT_URL,
+    origin: process.env.CLIENT_URL,
     credentials: true,
 }));
 
@@ -33,12 +40,18 @@ app.use('/', userRouter);
 app.use('/', postRouter);
 app.use('/', likeRouter);
 
+// WebSocket connection handling
+wss.on('connection', (ws) => {
+    console.log('WebSocket connection established');
 
+    // Close the WebSocket connection on client disconnect
+    ws.on('close', () => {
+        console.log('WebSocket connection closed');
+    });
+});
 
-
-
-// start server
-app.listen(PORT, () => {
+// Start the server
+server.listen(PORT, () => {
     const networkInterfaces = os.networkInterfaces();
     const ipv4Addresses: string[] = [];
 
@@ -51,8 +64,8 @@ app.listen(PORT, () => {
         });
     });
 
-    console.log(`Server running on:`);
+    console.log('Server running on:');
     console.log(`local: http://localhost:${PORT}`);
     console.log(`host: http://${ipv4Addresses[1]}:${PORT}`);
-    console.log(`Press CTRL + C to stop server`);
+    console.log('Press CTRL + C to stop server');
 });

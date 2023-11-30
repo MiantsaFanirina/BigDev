@@ -4,110 +4,117 @@ import { useState, useEffect, useContext } from 'react'
 import { X, Heart, MessageSquare } from "lucide-react"
 
 // service
-import { getUserById } from "../../../services/users.service";
-import { createLike, deleteLike, getLikesByPostId, isPostLikeByAUser } from '../../../services/like.service';
+import { getUserById } from "../../../services/users.service"
+import { createLike, deleteLike, getLikesByPostId, isPostLikeByAUser } from '../../../services/like.service'
 
 // fromat
-import { formaterDate } from '../../../utils/format';
+import { formaterDate } from '../../../utils/format'
 
 // context
-import { UserContext } from '../../../context/userContext';
+import { UserContext } from '../../../context/userContext'
+import { useWebSocket } from '../../../context/WebSocketContext'
 
 // default user profile
 import defaultProfile from '../../../assets/profile.png'
 
 export default function postCard({post}) { 
     
-    // current user
     const { user } = useContext(UserContext)
+    const { socket } = useWebSocket()
 
+    const [isLiked, setIsLiked] = useState()
+    const [postUser, setPostUser] = useState(null)
+    const [likeUser, setLikeUser] = useState('')
+    const [showFullDescription, setShowFullDescription] = useState(false)
     
-
-    // fetch
     const getUser = async () => {
         const user = await getUserById(post.user_id)
         setPostUser(user)
     }
-
+    
     const getPostLikes = async () => {
-        const likes = await getLikesByPostId(post.id);
+        const likes = await getLikesByPostId(post.id)
     
         if (likes.length === 0) {
-            setLikeUser("Aucun like");
-            return; // Ou retournez une chaîne appropriée pour aucun like
+            setLikeUser('Aucun like')
+            return
         }
     
         const userNames = await Promise.all(
             likes.map(async (like) => {
-                const user = await getUserById(like.user_id);
-                return user.name;
+                const user = await getUserById(like.user_id)
+                return user.name
             })
-        );
+        )
     
-        const numberOfLikes = userNames.length;
+        const numberOfLikes = userNames.length
     
         if (numberOfLikes === 1) {
-            setLikeUser(`${userNames[0]}`);
+            setLikeUser(`${userNames[0]}`)
         } else if (numberOfLikes === 2) {
-            setLikeUser(`${userNames[0]} et ${userNames[1]}`);
+            setLikeUser(`${userNames[0]} et ${userNames[1]}`)
         } else {
-            const remainingCount = numberOfLikes - 2;
-            setLikeUser(`${userNames[0]}, ${userNames[1]} et ${remainingCount} autres`);
+            const remainingCount = numberOfLikes - 2
+            setLikeUser(`${userNames[0]}, ${userNames[1]} et ${remainingCount} autres`)
         }
-    };
-
-
-    // props
-    const initialDescription = post.description
-
-    // states
-    const [isLiked, setIsLiked] = useState()
-    const [postUser, setPostUser] = useState(null)
-    const [likeUser, setLikeUser] = useState("")
-    const [showFullDescription, setShowFullDescription] = useState(false)
-
-    // lifecycle
+    }
+    
     useEffect(() => {
         const checkIsLiked = async () => {
-            const isLiked = await isPostLikeByAUser(post.id, user.id)
+            const isLiked = await isPostLikeByAUser(post.id, user?.id)
             setIsLiked(isLiked.isLiked)
         }
         checkIsLiked()
     }, [user, post])
-
+    
     useEffect(() => {
-        // Ensure post.user_id is defined before calling getUser
         if (post && post.user_id) {
-            getUser();
+            getUser()
+        } else {
+            setPostUser(null)
         }
-        
-        else {
-            setPostUser(null);
-        };
-
-
-    }, [post]);
-
+    }, [post])
+    
     useEffect(() => {
-        getPostLikes();
-    }, []);
+        getPostLikes()
+    }, [isLiked])
 
-    /**** interactions ****/
-    // like
+    
+    useEffect(() => {
+        const handleLikeUpdate = (data) => {
+            if (data.postId === post.id) {
+                getPostLikes()
+            }
+        }
+    
+        if (socket) {
+            socket.addEventListener('message', (event) => {
+                const data = JSON.parse(event.data)
+                if (data.event === 'likeUpdate') {
+                    handleLikeUpdate(data.payload)
+                }
+            })
+        }
+    
+        return () => {
+            // Cleanup socket listener when component unmounts
+            if (socket) {
+                socket.removeEventListener('message', handleLikeUpdate)
+            }
+        }
+    }, [socket, post.id])
+    
     const toggleLike = () => {
-        if(!isLiked) {
+        if (!isLiked) {
             createLike(post.id, user.id)
             setIsLiked(!isLiked)
-        }
-        else {
+        } else {
             deleteLike(post.id, user.id)
             setIsLiked(!isLiked)
         }
-        getPostLikes();
-
     }
-
-    // see more
+    
+    const initialDescription = post.description
     const initialDescriptionWords = initialDescription.split(' ')
     const maxWords = 20
     const sliceDescription = initialDescriptionWords.slice(0, maxWords).join(' ')
@@ -116,7 +123,6 @@ export default function postCard({post}) {
     const toggleDescription = () => {
         setShowFullDescription(!showFullDescription)
     }
-
 
     return (
         <div className="md:w-[768px] w-full bg-white dark:bg-slate-900 md:rounded md:shadow flex flex-col mb-8">
