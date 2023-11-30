@@ -19,6 +19,9 @@ import Cookies from 'js-cookie'
 // context 
 import { UserContext } from "../../context/userContext"
 
+// default user profile
+import defaultProfile from '../../assets/profile.png'
+
 
 function Home() {
     //get User from the context
@@ -67,7 +70,9 @@ function Home() {
                 
                 {/* add form */}
                 <div className="flex mt-8">
-                    <div className="bg-slate-500 w-[40px] h-[40px] rounded-full mr-5"></div>
+                    <div className="bg-slate-500 w-[40px] h-[40px] rounded-full mr-5 overflow-hidden">
+                    <img src={user?.profile_picture_url === "" ? defaultProfile : ""} alt="default profile picture" className="w-full h-full object-cover object-center"/>
+                    </div>
                     <button onClick={toggleAddPostModal} className=" w-full text-left dark:bg-slate-600 dark:hover:bg-slate-500 dark:text-slate-900 bg-slate-200 hover:bg-slate-300 px-5 rounded-full">Quoi de neuf ?</button>
                 </div>
                 

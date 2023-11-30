@@ -13,56 +13,98 @@ import { formaterDate } from '../../../utils/format';
 // context
 import { UserContext } from '../../../context/userContext';
 
+// default user profile
+import defaultProfile from '../../../assets/profile.png'
+
 export default function postCard({post}) { 
     
     // current user
     const { user } = useContext(UserContext)
 
-    // get the post user
+    
+
+    // fetch
     const getUser = async () => {
         const user = await getUserById(post.user_id)
         setPostUser(user)
     }
-    const [postUser, setPostUser] = useState(null)
 
-    useEffect(() => {
-        // Ensure post.user_id is defined before calling getUser
-        if (post && post.user_id) {
-            getUser();
+    const getPostLikes = async () => {
+        const likes = await getLikesByPostId(post.id);
+    
+        if (likes.length === 0) {
+            setLikeUser("Aucun like");
+            return; // Ou retournez une chaîne appropriée pour aucun like
         }
-    }, [post]);
+    
+        const userNames = await Promise.all(
+            likes.map(async (like) => {
+                const user = await getUserById(like.user_id);
+                return user.name;
+            })
+        );
+    
+        const numberOfLikes = userNames.length;
+    
+        if (numberOfLikes === 1) {
+            setLikeUser(`${userNames[0]}`);
+        } else if (numberOfLikes === 2) {
+            setLikeUser(`${userNames[0]} et ${userNames[1]}`);
+        } else {
+            const remainingCount = numberOfLikes - 2;
+            setLikeUser(`${userNames[0]}, ${userNames[1]} et ${remainingCount} autres`);
+        }
+    };
+
 
     // props
     const initialDescription = post.description
 
     // states
     const [isLiked, setIsLiked] = useState()
+    const [postUser, setPostUser] = useState(null)
+    const [likeUser, setLikeUser] = useState("")
+    const [showFullDescription, setShowFullDescription] = useState(false)
 
     // lifecycle
     useEffect(() => {
         const checkIsLiked = async () => {
             const isLiked = await isPostLikeByAUser(post.id, user.id)
-            console.log(post.id + " " + isLiked.isLiked)
             setIsLiked(isLiked.isLiked)
         }
         checkIsLiked()
     }, [user, post])
 
-    const [showFullDescription, setShowFullDescription] = useState(false)
+    useEffect(() => {
+        // Ensure post.user_id is defined before calling getUser
+        if (post && post.user_id) {
+            getUser();
+        }
+        
+        else {
+            setPostUser(null);
+        };
+
+
+    }, [post]);
+
+    useEffect(() => {
+        getPostLikes();
+    }, []);
 
     /**** interactions ****/
     // like
     const toggleLike = () => {
         if(!isLiked) {
-            const like = createLike(post.id, user.id)
-            console.log(like)
+            createLike(post.id, user.id)
             setIsLiked(!isLiked)
         }
         else {
-            const like = deleteLike(post.id, user.id)
-            console.log(like)
+            deleteLike(post.id, user.id)
             setIsLiked(!isLiked)
         }
+        getPostLikes();
+
     }
 
     // see more
@@ -84,7 +126,10 @@ export default function postCard({post}) {
 
                 {/* profile section */}
                 <div className="flex">
-                    <div className="bg-slate-500 w-[40px] h-[40px] rounded-full"></div>
+                    <div className="bg-slate-500 w-[40px] h-[40px] rounded-full overflow-hidden">
+                        <img src={postUser?.profile_picture_url === "" ? defaultProfile : ""} alt="default profile picture" className="w-full h-full object-cover object-center"/>
+                    </div>
+
                     <div className="ml-4 flex flex-col justify-center">
                         <h1 className="font-semibold text-lg dark:text-slate-50">{postUser?.name}</h1>
                         <p className="text-sm text-slate-500">publié le {formaterDate(post.createdAt)}</p>
@@ -96,7 +141,7 @@ export default function postCard({post}) {
                 </div>                
 
             </div>
-            
+                        
             {/* description */}
             {/* See more render option */}
             <p className="flex flex-col mb-10 mx-10 dark:text-slate-300">
@@ -132,7 +177,7 @@ export default function postCard({post}) {
             {/* like section */}
             <div className="w-full px-10 mb-6 flex items-center">
                 <Heart size={16} className="text-slate-500"/> 
-                <p className="ml-2 text-sm text-slate-500"></p>
+                <p className="ml-2 text-sm text-slate-500">{likeUser}</p>
             </div>
             
             <hr className="mb-6"/>
