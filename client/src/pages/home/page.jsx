@@ -1,4 +1,7 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useContext } from "react"
+
+// service
+import { getAllPosts } from '../../services/post.service';
 
 // navigation
 import { useNavigate } from 'react-router-dom'
@@ -13,15 +16,20 @@ import PostCard from "./components/postCard"
 // Utils
 import Cookies from 'js-cookie'
 
-const Post = {
-    username: "Rakotondrafara Miantsa Fanirina",
-    description: "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Temporibus pariatur velit vel excepturi rerum optio quod minima voluptate voluptates, nobis eaque facere quos, tempore molestias aut libero id corporis iusto doloribus, nesciunt quia assumenda enim. Voluptate provident voluptatem delectus possimus. Eius soluta fugit reiciendis veritatis quo ab repudiandae magnam explicabo iste rem eaque maxime, iure minima facere sed. Qui incidunt adipisci numquam unde id ratione explicabo sequi libero deserunt dolores! Est earum voluptate provident molestias voluptatem aliquid tempora officia quos sunt consequatur illum recusandae minus dolores amet eum numquam molestiae dolorum, blanditiis ipsa repudiandae doloremque doloribus quae modi. Molestiae, quidem!",
-    isLiked: true,
-    createdAt: "2m",
-    viewers: "Eliot, Monja et 345 autres"
-}
+// context 
+import { UserContext } from "../../context/userContext"
+
 
 function Home() {
+    //get User from the context
+    const { user } = useContext(UserContext)
+
+    const [posts, setPosts] = useState([])
+    const getPosts = async () => {
+        const posts = await getAllPosts()
+        setPosts(posts)
+    }
+
     // navigation
     const history = useNavigate()
 
@@ -37,13 +45,16 @@ function Home() {
     }
 
     // lifecycle
-  useEffect(() => {
+    useEffect(() => {
+
         const token = Cookies.get('token')
     
         if (token === undefined) {
             // Redirect the user to "/"
             history('/login')
         }
+        // get all posts
+        getPosts()
     }, [])
 
     return (
@@ -73,12 +84,13 @@ function Home() {
                 </div>
 
             </div>
-
             {/* Posts card */}
-            <PostCard Post={Post}/>
+            {posts.map((post) => (
+                <PostCard key={post.id} post={post} />
+            ))}
             
 
-            {showAddPostModal && <AddPostModal toggleAddPostModal={toggleAddPostModal} />}
+            {showAddPostModal && <AddPostModal toggleAddPostModal={toggleAddPostModal} user={user}/>}
         </div>
     )
 }

@@ -7,6 +7,7 @@ import os from 'os';
 
 // router
 import { userRouter } from './User/user.router';
+import { postRouter } from './Post/post.router';
 
 // config
 dotenv.config();
@@ -28,6 +29,7 @@ app.use(express.json());
 
 // Routes
 app.use('/', userRouter);
+app.use('/', postRouter);
 
 
 

@@ -5,19 +5,26 @@ import { motion } from 'framer-motion'
 // icons
 import { X, ImageDown } from 'lucide-react'
 
+// service
+import { createPost } from '../../../services/post.service'
 
 // modal component
-export default function AddPostModal({ toggleAddPostModal }) {
+export default function AddPostModal({ toggleAddPostModal, user }) {
   // states
   const [textareaValue, setTextareaValue] = useState('')
   const [images, setImages] = useState(null)
 
-  const postPost = () => {
-    const data = {
-      description: textareaValue,
-      medias: images,
+  const addPost = async () => {
+    if(images === null || images.length === 0)
+    {
+      const response = await createPost({user_id: user.id, description: textareaValue })
+      console.log(response)
     }
-    toggleAddPostModal()
+    else
+    {
+      const response = await createPost({user_id: user.id, description: textareaValue, medias: images })
+      console.log(response)
+    }
   }
 
   const isPublishDisabled = !textareaValue.trim() && !images
@@ -34,11 +41,10 @@ export default function AddPostModal({ toggleAddPostModal }) {
         className="bg-white dark:bg-slate-900 md:shadow w-full md:w-[520px] md:h-auto h-full md:overflow-y-scroll md:overflow-x-hidden p-10 rounded overflow-hidden"
         >
 
-        <ModalHeader toggleAddPostModal={toggleAddPostModal} />
-
+        <ModalHeader toggleAddPostModal={toggleAddPostModal}/>
         <hr className="mt-8" />
 
-        <ProfileSection />
+        <ProfileSection  username={user.name}/>
 
         <div className="max-h-[400px] overflow-y-scroll">
           <FormSection
@@ -50,7 +56,7 @@ export default function AddPostModal({ toggleAddPostModal }) {
         </div>
 
         <button
-          onClick={postPost}
+          onClick={() => addPost()}
           className={`w-full mt-6 bg-slate-500 dark:bg-slate-800 ${
             isPublishDisabled ? 'opacity-50 cursor-default' : 'hover:dark:bg-slate-700 hover:bg-slate-600'
           } text-white py-3 rounded`}
@@ -78,11 +84,11 @@ function ModalHeader({toggleAddPostModal}) {
 
 
 // Profile indicator
-function ProfileSection() {
+function ProfileSection({username}) {
   return (
     <div className="flex items-center mt-8 mb-3">
         <div className="bg-slate-500 w-[40px] h-[40px] rounded-full mr-5"></div>
-        <h1 className="font-semibold dark:text-slate-200">Rakotondrafara Miantsa Fanirina</h1>
+        <h1 className="font-semibold dark:text-slate-200">{username}</h1>
     </div>
   )
 }

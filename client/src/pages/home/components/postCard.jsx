@@ -1,15 +1,32 @@
-import { useState } from 'react'
+import { useState, useEffect, useContext } from 'react'
 
 // icons
 import { X, Heart, MessageSquare } from "lucide-react"
 
-export default function PostCard({Post}) {
+// service
+import { getUserById } from "../../../services/users.service";
+
+export default function postCard({post}) { 
+    
+    // get the post user
+    const getUser = async () => {
+        const user = await getUserById(post.user_id)
+        setPostUser(user)
+    }
+    const [postUser, setPostUser] = useState(null)
+
+    useEffect(() => {
+        // Ensure post.user_id is defined before calling getUser
+        if (post && post.user_id) {
+            getUser();
+        }
+    }, [post]);
 
     // props
-    const initialDescription = Post.description
+    const initialDescription = post.description
 
     // states
-    const [isLiked, setIsLiked] = useState(Post.isLiked)
+    const [isLiked, setIsLiked] = useState(true)
     const [showFullDescription, setShowFullDescription] = useState(false)
 
     /**** interactions ****/
@@ -39,8 +56,8 @@ export default function PostCard({Post}) {
                 <div className="flex">
                     <div className="bg-slate-500 w-[40px] h-[40px] rounded-full"></div>
                     <div className="ml-4 flex flex-col justify-center">
-                        <h1 className="font-semibold text-lg dark:text-slate-50">{Post.username}</h1>
-                        <p className="text-sm text-slate-500">{Post.createdAt}</p>
+                        <h1 className="font-semibold text-lg dark:text-slate-50">{postUser?.name}</h1>
+                        <p className="text-sm text-slate-500">{post.createdAt}</p>
                     </div>
                 </div>
 
@@ -80,12 +97,12 @@ export default function PostCard({Post}) {
             </p>
 
             {/* image section */}
-            <div className="w-full h-[500px] min-h-[320px] max-h-[300px] bg-slate-500 mb-6 overflow-hidden"></div>
+            {post?.media ? <div className="w-full h-[500px] min-h-[320px] max-h-[300px] bg-slate-500 mb-6 overflow-hidden"></div> : null}
 
             {/* like section */}
             <div className="w-full px-10 mb-6 flex items-center">
                 <Heart size={16} className="text-slate-500"/> 
-                <p className="ml-2 text-sm text-slate-500">{Post.viewers}</p>
+                <p className="ml-2 text-sm text-slate-500"></p>
             </div>
             
             <hr className="mb-6"/>

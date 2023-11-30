@@ -39,6 +39,8 @@ model Post {
   description String
   comments    Comment[]
   media       Media[]
+  likes       Like[]
+  createdAt   DateTime @default(now())
   user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id     String
 }
@@ -65,16 +67,15 @@ model Comment {
   parent    Comment?  @relation("ParentChild", fields: [parent_id], references: [id], onDelete: Cascade)
   children  Comment[] @relation("ParentChild")
   parent_id String?
-  likes     Like[]
 }
 
 
-// Represents a like on a comment
+// Represents a like on a post
 model Like {
   user       User    @relation(fields: [user_id], references: [id])
   user_id    String
-  comment    Comment @relation(fields: [comment_id], references: [id])
-  comment_id String
+  post    Post @relation(fields: [post_id], references: [id])
+  post_id String
 
-  @@id([user_id, comment_id])
+  @@id([user_id, post_id])
 }
