@@ -1,6 +1,9 @@
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
+
+// socket
+import { socket } from '../../../utils/socketIoClient'
 
 // icons
 import { X, ImageDown } from 'lucide-react'
@@ -9,23 +12,29 @@ import { X, ImageDown } from 'lucide-react'
 import { createPost } from '../../../services/post.service'
 
 // modal component
-export default function AddPostModal({ toggleAddPostModal, user }) {
+export default function AddPostModal({ toggleAddPostModal, user, getPosts }) {
   // states
   const [textareaValue, setTextareaValue] = useState('')
   const [images, setImages] = useState(null)
 
   const addPost = async () => {
-    if(images === null || images.length === 0)
-    {
-      const response = await createPost({user_id: user.id, description: textareaValue })
-      console.log(response)
-    }
-    else
-    {
-      const response = await createPost({user_id: user.id, description: textareaValue, medias: images })
-      console.log(response)
-    }
+    
+    const response = await createPost({user_id: user.id, description: textareaValue, medias: images })
+    socket.emit('postUpdate', user.name)
+    getPosts()
+    toggleAddPostModal()
   }
+  useEffect(() => {
+    const serializedImages = images?.map(image => ({
+      name: image.name,
+      size: image.size,
+      type: image.type,
+      lastModified: image.lastModified, 
+    }))
+
+    setImages(serializedImages)
+
+  }, [images])
 
   const isPublishDisabled = !textareaValue.trim() && !images
 
@@ -112,6 +121,11 @@ function FormSection({images, setImages, textareaValue, setTextareaValue}) {
   
 
   /**** files upload interactions ****/
+  const fileToBlob = (file) => {
+    const blob = new Blob([file], { type: file.type })
+    return blob
+}
+
   const handleFileUpload = (event) => {     
       const files = event.target.files
       const newImages = []

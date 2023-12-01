@@ -2,15 +2,19 @@ import * as dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import http from 'http';
-import WebSocket, { WebSocketServer } from "ws";
 import os from 'os';
+
+
+// SOCKET.IO
+import { Server } from 'socket.io';
 
 // Import your routers
 import { userRouter } from './User/user.router';
 import { postRouter } from './Post/post.router';
-import { likeRouter } from './Like/like.route';
+import { likeRouter } from './Like/like.router';
 
 dotenv.config();
+
 
 if (!process.env.PORT) {
     process.exit(1);
@@ -22,9 +26,31 @@ const app = express();
 // Create an HTTP server
 const server = http.createServer(app);
 
-// Create a WebSocket server
-const wss = new WebSocketServer({
-    port: 8080,
+// Create the Socket.IO server
+const io = new Server(server, {
+    cors: {
+        origin: process.env.CLIENT_URL,
+        methods: ['GET', 'POST'],
+    },
+});
+
+// listening user connnected to the socket
+io.on("connection", (socket) => {
+    console.log(`User connected to the socket with id: ${socket.id}`);
+    socket.on("disconnect", () => {
+        console.log(`User disconnected: ${socket.id}`);
+    });
+
+    // listen for post update
+    socket.on("postUpdate", (data: any) => {
+        socket.broadcast.emit("postIsUpdated", data);
+    });
+
+    // listen for like update
+    socket.on("likeUpdate", (data: any) => {
+        socket.broadcast.emit("likeIsUpdated", data);
+    });
+
 });
 
 // CORS middleware
@@ -40,15 +66,6 @@ app.use('/', userRouter);
 app.use('/', postRouter);
 app.use('/', likeRouter);
 
-// WebSocket connection handling
-wss.on('connection', (ws) => {
-    console.log('WebSocket connection established');
-
-    // Close the WebSocket connection on client disconnect
-    ws.on('close', () => {
-        console.log('WebSocket connection closed');
-    });
-});
 
 // Start the server
 server.listen(PORT, () => {

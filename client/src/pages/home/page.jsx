@@ -6,6 +6,9 @@ import { getAllPosts } from '../../services/post.service';
 // navigation
 import { useNavigate } from 'react-router-dom'
 
+// toast
+import { toast } from 'react-toastify';
+
 // icons
 import { Image } from "lucide-react"
 
@@ -22,30 +25,38 @@ import { UserContext } from "../../context/userContext"
 // default user profile
 import defaultProfile from '../../assets/profile.png'
 
+// socket
+import { socket } from '../../utils/socketIoClient'
 
 function Home() {
+
     //get User from the context
     const { user } = useContext(UserContext)
 
+    // states
     const [posts, setPosts] = useState([])
+    const [showAddPostModal, setShowAddPostModal] = useState(false)
+
+    // navigation
+    const history = useNavigate()
+
+    
+    // get all post
     const getPosts = async () => {
         const posts = await getAllPosts()
         setPosts(posts)
     }
 
-    // navigation
-    const history = useNavigate()
-
-    const [showAddPostModal, setShowAddPostModal] = useState(false)
-
-    const toggleAddPostModal = () => {
-        setShowAddPostModal(!showAddPostModal)
-    }
-
+    const getNewPosts = async () => {
+        const postsData = await getAllPosts();
+        
+        // Identify new posts by comparing with existing posts
+        const newPosts = postsData.filter(newPost => !posts.some(existingPost => existingPost.id === newPost.id));
     
-    const toggleDarkMode = () => {
-        document.documentElement.classList.toggle("dark")
+        // Update the state with new posts
+        setPosts(prevPosts => [...prevPosts, ...newPosts]);
     }
+
 
     // lifecycle
     useEffect(() => {
@@ -59,6 +70,38 @@ function Home() {
         // get all posts
         getPosts()
     }, [])
+
+
+    /* SOCKET */
+    useEffect(() => {
+        
+
+        socket.on('postIsUpdated', (username) => {
+            // add the post
+            getNewPosts()
+
+            toast(`${username} a ajouté un post`, {
+                autoClose: 5000,
+            });
+        })
+        
+
+        return () => {
+            socket.off('postIsUpdated')
+        }
+
+    }, [socket])
+
+    /* INTERACTIONS */
+    const toggleAddPostModal = () => {
+        setShowAddPostModal(!showAddPostModal)
+    }
+
+    
+    const toggleDarkMode = () => {
+        document.documentElement.classList.toggle("dark")
+    }
+
 
     return (
         <div className="w-full h-full flex flex-col items-center md:p-10 p-4 overflow-x-hidden overflow-y-scroll relative">
@@ -90,12 +133,15 @@ function Home() {
 
             </div>
             {/* Posts card */}
-            {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
-            ))}
+            {posts ? posts
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .map((post) => (
+                    <PostCard key={post.id} post={post} />
+                )): <p>Aucun post Pour l'instant</p>
+            }
             
 
-            {showAddPostModal && <AddPostModal toggleAddPostModal={toggleAddPostModal} user={user}/>}
+            {showAddPostModal && <AddPostModal toggleAddPostModal={toggleAddPostModal} user={user} getPosts={getNewPosts}/>}
         </div>
     )
 }

@@ -19,7 +19,6 @@ const UserProvider = ({ children }) => {
     useEffect(() => {
         const user = async () => {
             const response = await getUserById(user_id);
-            console.log(response)
             setUser(response);
         };
         user();

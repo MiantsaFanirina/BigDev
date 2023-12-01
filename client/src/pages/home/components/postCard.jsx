@@ -12,54 +12,61 @@ import { formaterDate } from '../../../utils/format'
 
 // context
 import { UserContext } from '../../../context/userContext'
-import { useWebSocket } from '../../../context/WebSocketContext'
 
 // default user profile
 import defaultProfile from '../../../assets/profile.png'
 
+// socket
+import { socket } from '../../../utils/socketIoClient'
+
 export default function postCard({post}) { 
     
     const { user } = useContext(UserContext)
-    const { socket } = useWebSocket()
 
+    // states
     const [isLiked, setIsLiked] = useState()
     const [postUser, setPostUser] = useState(null)
     const [likeUser, setLikeUser] = useState('')
     const [showFullDescription, setShowFullDescription] = useState(false)
     
+
+    // get the post user
     const getUser = async () => {
         const user = await getUserById(post.user_id)
         setPostUser(user)
     }
     
+    // get All the post likes
     const getPostLikes = async () => {
-        const likes = await getLikesByPostId(post.id)
+        const likes = await getLikesByPostId(post.id);
     
         if (likes.length === 0) {
-            setLikeUser('Aucun like')
-            return
+            setLikeUser('Aucun like');
+            return;
         }
     
         const userNames = await Promise.all(
-            likes.map(async (like) => {
-                const user = await getUserById(like.user_id)
-                return user.name
+            likes.slice(0, 2).map(async (like) => {
+                const user = await getUserById(like.user_id);
+                return user.name;
             })
-        )
+        );
     
-        const numberOfLikes = userNames.length
+        const numberOfLikes = likes.length;
     
         if (numberOfLikes === 1) {
-            setLikeUser(`${userNames[0]}`)
+            setLikeUser(`${userNames[0]}`);
         } else if (numberOfLikes === 2) {
-            setLikeUser(`${userNames[0]} et ${userNames[1]}`)
+            setLikeUser(`${userNames.join(' et ')}`);
         } else {
-            const remainingCount = numberOfLikes - 2
-            setLikeUser(`${userNames[0]}, ${userNames[1]} et ${remainingCount} autres`)
+            const remainingCount = numberOfLikes - 2;
+            setLikeUser(`${userNames.join(', ')} et ${remainingCount} autres`);
         }
-    }
+    };
     
     useEffect(() => {
+
+        // check if the post is liked by the current user
         const checkIsLiked = async () => {
             const isLiked = await isPostLikeByAUser(post.id, user?.id)
             setIsLiked(isLiked.isLiked)
@@ -73,45 +80,43 @@ export default function postCard({post}) {
         } else {
             setPostUser(null)
         }
-    }, [post])
+    }, [post, isLiked])
     
     useEffect(() => {
-        getPostLikes()
-    }, [isLiked])
 
-    
+        // get All the post like
+        getPostLikes()
+    }, [post, ])
+
+
+    /** SOCKET */
     useEffect(() => {
-        const handleLikeUpdate = (data) => {
-            if (data.postId === post.id) {
-                getPostLikes()
-            }
-        }
+        socket.on('postIsUpdated', (username) => {
+            // add the post
+            getPostLikes()
     
-        if (socket) {
-            socket.addEventListener('message', (event) => {
-                const data = JSON.parse(event.data)
-                if (data.event === 'likeUpdate') {
-                    handleLikeUpdate(data.payload)
-                }
-            })
-        }
-    
+            toast(`${username} a ajouté un post`, {
+                autoClose: 5000,
+            });
+        })
+        
         return () => {
-            // Cleanup socket listener when component unmounts
-            if (socket) {
-                socket.removeEventListener('message', handleLikeUpdate)
-            }
+            socket.off('postIsUpdated')
         }
-    }, [socket, post.id])
+    }, [socket])
     
+    
+    /** INTERACTIONS */
     const toggleLike = () => {
         if (!isLiked) {
-            createLike(post.id, user.id)
+            createLike(post.id, user?.id)
             setIsLiked(!isLiked)
         } else {
-            deleteLike(post.id, user.id)
+            deleteLike(post.id, user?.id)
             setIsLiked(!isLiked)
         }
+
+        socket.emit('updateLike', {})
     }
     
     const initialDescription = post.description

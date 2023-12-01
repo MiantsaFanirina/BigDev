@@ -10,7 +10,10 @@ import Home from './home/page'
 
 // userContext
 import {UserProvider} from '../context/userContext'
-import {WebSocketProvider} from '../context/WebSocketContext'
+
+// toast
+import { ToastContainer } from 'react-toastify'
+import "react-toastify/dist/ReactToastify.css"
 
 function MainRoutes() {
   return (
@@ -21,13 +24,27 @@ function MainRoutes() {
         
       </Routes>
       <UserProvider>
-        <WebSocketProvider>
+          
           <Routes>
             <Route index path="/" element={<Home />}/>
           </Routes>
 
-        </WebSocketProvider>
       </UserProvider>
+
+      {/* message toast container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      
     </>
   )
 }

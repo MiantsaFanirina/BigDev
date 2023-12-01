@@ -45,6 +45,7 @@ export default function Register() {
 
     if (response.token) {
       Cookies.set('token', response.token, { expires: 30 })
+      Cookies.set('user_id', response.id, { expires: 30 })
       history('/')
     }
     else {
@@ -62,7 +63,6 @@ export default function Register() {
 
   return (
     <>
-    {console.log(errorMessage)}
       <motion.div
 
         // animation

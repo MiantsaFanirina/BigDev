@@ -49,7 +49,6 @@ function Login() {
     }
     else
     {
-      console.log(response)
       setErrorMessage("Le nom d'utilisateur ou le mot de passe est incorrect")
     }
 
