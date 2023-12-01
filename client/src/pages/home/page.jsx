@@ -48,7 +48,6 @@ function Home() {
     }
 
     const getNewPosts = async () => {
-        new Promise(resolve => setTimeout(resolve,500));
         const postsData = await getAllPosts();
         
         // Identify new posts by comparing with existing posts

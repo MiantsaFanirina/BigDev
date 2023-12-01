@@ -19,7 +19,7 @@ import defaultProfile from '../../../assets/profile.png'
 // socket
 import { socket } from '../../../utils/socketIoClient'
 
-export default function postCard({post, getPosts, getNewPosts}) { 
+export default function postCard({post, getPosts}) { 
     
     const { user } = useContext(UserContext)
 
@@ -209,7 +209,7 @@ export default function postCard({post, getPosts, getNewPosts}) {
                 </button>
                 
                 {/* comment button */}
-                <button className="md:px-24 px-10 py-3 mx-3 hover:bg-slate-200 md:dark:hover:bg-slate-500 md:dark:text-slate-300 rounded-md cursor-pointer flex items-center content-center">
+                <button className="md:px-24 px-10 py-3 mx-3 dark:text-slate-300 hover:dark:text-slate-800 hover:bg-slate-200 md:dark:hover:bg-slate-500 md:dark:text-slate-300 rounded-md cursor-pointer flex items-center content-center">
                     <MessageSquare size={16}/>
                     <h3 className="ml-2 text-sm">Commentaires</h3> 
                 </button>
