@@ -38,6 +38,9 @@ export default function postCard({post}) {
     
     // get All the post likes
     const getPostLikes = async () => {
+        // Introduce a 200ms delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+    
         const likes = await getLikesByPostId(post.id);
     
         if (likes.length === 0) {
@@ -86,22 +89,18 @@ export default function postCard({post}) {
 
         // get All the post like
         getPostLikes()
-    }, [post, ])
+    }, [post, isLiked])
 
 
     /** SOCKET */
     useEffect(() => {
-        socket.on('postIsUpdated', (username) => {
+        socket.on('likeIsUpdated', (username) => {
             // add the post
             getPostLikes()
-    
-            toast(`${username} a ajouté un post`, {
-                autoClose: 5000,
-            });
         })
         
         return () => {
-            socket.off('postIsUpdated')
+            socket.off('likeIsUpdated')
         }
     }, [socket])
     
@@ -116,7 +115,7 @@ export default function postCard({post}) {
             setIsLiked(!isLiked)
         }
 
-        socket.emit('updateLike', {})
+        socket.emit('likeUpdate', {})
     }
     
     const initialDescription = post.description

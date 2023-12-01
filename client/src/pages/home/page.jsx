@@ -133,11 +133,11 @@ function Home() {
 
             </div>
             {/* Posts card */}
-            {posts ? posts
+            {posts.length > 0 ? posts
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                 .map((post) => (
                     <PostCard key={post.id} post={post} />
-                )): <p>Aucun post Pour l'instant</p>
+                )): <p className="text-xl text-slate-800 dark:text-slate-200">Aucun post pour l'instant</p>
             }
             
 
