@@ -6,7 +6,7 @@ import { X, Heart, MessageSquare } from "lucide-react"
 // service
 import { getUserById } from "../../../services/users.service"
 import { createLike, deleteLike, getLikesByPostId, isPostLikeByAUser } from '../../../services/like.service'
-
+import { deletePost } from '../../../services/post.service'
 // fromat
 import { formaterDate } from '../../../utils/format'
 
@@ -19,12 +19,12 @@ import defaultProfile from '../../../assets/profile.png'
 // socket
 import { socket } from '../../../utils/socketIoClient'
 
-export default function postCard({post}) { 
+export default function postCard({post, getPosts, getNewPosts}) { 
     
     const { user } = useContext(UserContext)
 
     // states
-    const [isLiked, setIsLiked] = useState()
+    const [isLiked, setIsLiked] = useState(false)
     const [postUser, setPostUser] = useState(null)
     const [likeUser, setLikeUser] = useState('')
     const [showFullDescription, setShowFullDescription] = useState(false)
@@ -38,8 +38,8 @@ export default function postCard({post}) {
     
     // get All the post likes
     const getPostLikes = async () => {
-        // Introduce a 200ms delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Introduce a 500ms delay
+        await new Promise(resolve => setTimeout(resolve,500));
     
         const likes = await getLikesByPostId(post.id);
     
@@ -68,14 +68,14 @@ export default function postCard({post}) {
     };
     
     useEffect(() => {
-
-        // check if the post is liked by the current user
         const checkIsLiked = async () => {
+            // Introduce a 500ms delay
+            await new Promise(resolve => setTimeout(resolve,500));
             const isLiked = await isPostLikeByAUser(post.id, user?.id)
             setIsLiked(isLiked.isLiked)
         }
         checkIsLiked()
-    }, [user, post])
+    }, [post, user])
     
     useEffect(() => {
         if (post && post.user_id) {
@@ -83,13 +83,13 @@ export default function postCard({post}) {
         } else {
             setPostUser(null)
         }
-    }, [post, isLiked])
+    }, [post, user, isLiked])
     
     useEffect(() => {
 
         // get All the post like
         getPostLikes()
-    }, [post, isLiked])
+    }, [post, user, isLiked])
 
 
     /** SOCKET */
@@ -108,14 +108,21 @@ export default function postCard({post}) {
     /** INTERACTIONS */
     const toggleLike = () => {
         if (!isLiked) {
-            createLike(post.id, user?.id)
-            setIsLiked(!isLiked)
+            createLike(post?.id, user?.id)
+            setIsLiked(prevIsLiked => !prevIsLiked);
         } else {
-            deleteLike(post.id, user?.id)
-            setIsLiked(!isLiked)
+            deleteLike(post?.id, user?.id)
+            setIsLiked(prevIsLiked => !prevIsLiked);
         }
 
         socket.emit('likeUpdate', {})
+    }
+
+    const removePost = async (post_id) => {
+        await deletePost(post_id)
+        getPosts()
+        const username = "delete"
+        socket.emit('postUpdate', username)
     }
     
     const initialDescription = post.description
@@ -146,9 +153,9 @@ export default function postCard({post}) {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-center text-slate-500 w-10 h-10 rounded-full hover:bg-slate-100 cursor-pointer">
-                    <X />
-                </div>                
+                {post?.user_id === user?.id ?<div onClick={async () => await removePost(post?.id)} className="flex items-center justify-center text-slate-500 w-10 h-10 rounded-full hover:bg-slate-100 cursor-pointer">
+                    <X /> 
+                </div> : null}
 
             </div>
                         

@@ -49,6 +49,11 @@ postRouter.post('/posts', async (req: Request, res: Response) => {
     }
 });
 
+// delete post
+postRouter.delete("/posts/:id", async (req: Request, res: Response) => {
+    const post = await PostService.deletePost(req.params.id);
+    res.status(200).json(post);
+});
 
 export {postRouter} 
 

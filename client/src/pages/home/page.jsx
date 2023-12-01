@@ -48,15 +48,23 @@ function Home() {
     }
 
     const getNewPosts = async () => {
+        new Promise(resolve => setTimeout(resolve,500));
         const postsData = await getAllPosts();
         
         // Identify new posts by comparing with existing posts
-        const newPosts = postsData.filter(newPost => !posts.some(existingPost => existingPost.id === newPost.id));
+        const newPosts = postsData.filter(newPost => {
+            return !posts.some(existingPost => 
+                existingPost.id === newPost.id &&
+                existingPost.description === newPost.description &&
+                existingPost.createdAt === newPost.createdAt &&
+                existingPost.user_id === newPost.user_id
+            );
+        });
     
         // Update the state with new posts
         setPosts(prevPosts => [...prevPosts, ...newPosts]);
+        console.log(posts)
     }
-
 
     // lifecycle
     useEffect(() => {
@@ -77,12 +85,15 @@ function Home() {
         
 
         socket.on('postIsUpdated', (username) => {
-            // add the post
-            getNewPosts()
 
-            toast(`${username} a ajouté un post`, {
-                autoClose: 5000,
-            });
+            // add the post
+            getPosts()
+
+            if(username !== 'delete'){
+                toast(`${username} a ajouté un post`, {
+                    autoClose: 5000,
+                });
+            }
         })
         
 
@@ -136,7 +147,7 @@ function Home() {
             {posts.length > 0 ? posts
                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                 .map((post) => (
-                    <PostCard key={post.id} post={post} />
+                    <PostCard key={post.id} post={post} getPosts={getPosts} getNewPosts={getNewPosts}  />
                 )): <p className="text-xl text-slate-800 dark:text-slate-200">Aucun post pour l'instant</p>
             }
             

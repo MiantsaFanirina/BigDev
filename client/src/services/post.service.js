@@ -1,4 +1,4 @@
-import {createData, fetchData} from '../utils/fetchClient'
+import {createData, fetchData, deleteData} from '../utils/fetchClient'
 
 // get all posts
 export const getAllPosts = async () => {
@@ -9,5 +9,11 @@ export const getAllPosts = async () => {
 // create post
 export const createPost = async (data) => {
     const response = await createData('posts', data)
+    return response
+}
+
+// delete post
+export const deletePost = async (id) => {
+    const response = await deleteData(`posts/${id}`)
     return response
 }

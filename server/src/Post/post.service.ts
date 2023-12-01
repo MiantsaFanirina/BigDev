@@ -26,3 +26,31 @@ export const createPost = async (post: any): Promise<any> => {
         data: post
     });
 }
+
+
+// delete post
+export const deletePost = async (id: string): Promise<any> => {
+    await db.comment.deleteMany({
+        where: {
+          post_id: id,
+        },
+    });
+    await db.media.deleteMany({
+        where: {
+          post_id:id,
+        },
+    });
+
+    await db.like.deleteMany({
+        where: {
+          post_id: id,
+        },
+    });
+
+    const deletedPost = await db.post.delete({
+        where: {
+          id: id,
+        }
+    });
+    return deletedPost;
+}
