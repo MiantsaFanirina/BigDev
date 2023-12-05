@@ -18,6 +18,7 @@ import "react-toastify/dist/ReactToastify.css"
 function MainRoutes() {
   return (
     <>
+      {console.log('backend url', import.meta.env.VITE_BACKEND_URL)}
       <Routes>
         <Route path="/login" element={<Login />}/>
         <Route path="/register" element={<Register />}/>

@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8000";
+const API_URL = import.meta.env.VITE_BACKEND_URL
 
 // Function to fetch data from the API
 export const fetchData = async (endpoint, options = {}) => {
@@ -15,7 +15,20 @@ export const createData = async (endpoint, data) => {
       'Content-Type': 'application/json',
       'credentials': 'include',
     },
+    credentials: 'include',
     body: JSON.stringify(data),
+  };
+
+  const response = await fetch(`${API_URL}/${endpoint}`, options);
+  return response.json();
+};
+
+// Function to create data through the API
+export const createDataForm = async (endpoint, formData) => {
+  const options = {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
   };
 
   const response = await fetch(`${API_URL}/${endpoint}`, options);
@@ -30,6 +43,7 @@ export const updateData = async (endpoint, id, data) => {
       'Content-Type': 'application/json',
       'credentials': 'include',
     },
+    credentials: 'include',
     body: JSON.stringify(data),
   };
 
@@ -45,6 +59,7 @@ export const deleteData = async (endpoint) => {
       'Content-Type': 'application/json',
       'credentials': 'include',
     },
+    credentials: 'include',
   };
 
   const response = await fetch(`${API_URL}/${endpoint}`, options);

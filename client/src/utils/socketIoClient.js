@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
-const BACKEND_URL = "http://localhost:8000"
+const VITE_BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const socket = io.connect(BACKEND_URL)
+const socket = io.connect(VITE_BACKEND_URL)
 
 export { socket }

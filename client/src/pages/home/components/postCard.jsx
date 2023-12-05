@@ -18,6 +18,7 @@ import defaultProfile from '../../../assets/profile.png'
 
 // socket
 import { socket } from '../../../utils/socketIoClient'
+import PostSlider from './postSlider';
 
 export default function postCard({post, getPosts}) { 
     
@@ -189,7 +190,9 @@ export default function postCard({post, getPosts}) {
             </p>
 
             {/* image section */}
-            {post?.media ? <div className="w-full h-[500px] min-h-[320px] max-h-[300px] bg-slate-500 mb-6 overflow-hidden"></div> : null}
+            {post?.media[0] ? <div className="w-full h-[500px] max-h-[300px] bg-slate-300 mb-6 overflow-hidden">
+                <PostSlider media={post?.media}></PostSlider>  
+            </div> : null}
 
             {/* like section */}
             <div className="w-full px-10 mb-6 flex items-center">

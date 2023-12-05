@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import http from 'http';
 import os from 'os';
-
+import bodyParser from 'body-parser';
 
 // SOCKET.IO
 import { Server } from 'socket.io';
@@ -12,6 +12,7 @@ import { Server } from 'socket.io';
 import { userRouter } from './User/user.router';
 import { postRouter } from './Post/post.router';
 import { likeRouter } from './Like/like.router';
+import { mediaRouter } from './Media/media.router';
 
 dotenv.config();
 
@@ -22,6 +23,13 @@ if (!process.env.PORT) {
 
 const PORT: number = parseInt(process.env.PORT);
 const app = express();
+// Increase the payload size limit (e.g., 10MB)
+app.use(express.json({ limit: '10mb' }));
+
+// body parser middleware
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 
 // Create an HTTP server
 const server = http.createServer(app);
@@ -67,7 +75,10 @@ app.use(express.json());
 app.use('/', userRouter);
 app.use('/', postRouter);
 app.use('/', likeRouter);
+app.use('/', mediaRouter);
 
+//static folder
+app.use(express.static('medias'));
 
 // Start the server
 server.listen(PORT, () => {

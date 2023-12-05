@@ -18,28 +18,23 @@ export default function AddPostModal({ toggleAddPostModal, user, getPosts }) {
   const [images, setImages] = useState(null)
 
   const addPost = async () => {
-    
-    const response = await createPost({user_id: user.id, description: textareaValue, medias: images })
+    console.log(images)
+    if (images) {
+      const response = await createPost({user_id: user.id, description: textareaValue, medias: images })
+    }
+    else {
+      const response = await createPost({user_id: user.id, description: textareaValue })
+    }
     socket.emit('postUpdate', user.name)
     getPosts()
     toggleAddPostModal()
   }
-  useEffect(() => {
-    const serializedImages = images?.map(image => ({
-      name: image.name,
-      size: image.size,
-      type: image.type,
-      lastModified: image.lastModified, 
-    }))
-
-    setImages(serializedImages)
-
-  }, [images])
 
   const isPublishDisabled = !textareaValue.trim() && !images
 
   return createPortal(
     <div className="w-full h-screen bg-slate-50 dark:bg-black dark:bg-opacity-50 bg-opacity-80 z-50 absolute top-0 left-0 flex items-center justify-center">
+
       <motion.div
 
         // animations
@@ -121,10 +116,6 @@ function FormSection({images, setImages, textareaValue, setTextareaValue}) {
   
 
   /**** files upload interactions ****/
-  const fileToBlob = (file) => {
-    const blob = new Blob([file], { type: file.type })
-    return blob
-}
 
   const handleFileUpload = (event) => {     
       const files = event.target.files
@@ -174,13 +165,17 @@ function FormSection({images, setImages, textareaValue, setTextareaValue}) {
   }
   
   /***********/
-
+  // format
+  const isVideo = (file) => {
+    return file.type.includes("video")
+  }
   return (
     <>
       <textarea
         value={textareaValue}
         onChange={handleTextareaChange}
         onInput={handleAutoResize}
+        name='description'
         placeholder="Quoi de neuf ?"
         className="my-6 w-full resize-none outline-none bg-transparent dark:text-slate-300"
       />
@@ -197,6 +192,7 @@ function FormSection({images, setImages, textareaValue, setTextareaValue}) {
               <input
                   type="file"
                   id="fileInput"
+                  name="fileInput"
                   className="hidden"
                   multiple
                   accept="image/*,video/*"
@@ -215,29 +211,38 @@ function FormSection({images, setImages, textareaValue, setTextareaValue}) {
           </label>)
       :
           (<div className="w-full h-auto border-[1px] dark:border-slate-600 rounded-lg p-3 flex flex-wrap flex-grow items-center justify-center cursor-pointer">
-              {images.length === 1 ? (
-
-                <div className="w-full h-[200px] flex items-center justify-center relative m-4 bg-slate-200 dark:bg-slate-800 rounded-md">
-                    <img src={URL.createObjectURL(images[0])} alt={`image-0`}  className="w-full h-full object-contain object-center"/>
-                    <button className="text-slate-500 dark:text-slate-300 absolute right-2 top-2 w-10 h-10 rounded-full bg-slate-300 dark:bg-slate-900 hover:dark:bg-slate-800 hover:bg-slate-100 cursor-pointer flex items-center justify-center">
-                        <X onClick={() => removeImage(0)} size={16}/>
-                    </button>
-                </div>
-
+          {images.length === 1 ? (
+            <div className="w-full h-[200px] flex items-center justify-center relative m-4 bg-slate-200 dark:bg-slate-800 rounded-md">
+              {isVideo(images[0]) ? (
+                <video autoPlay loop muted className="w-full h-full object-contain object-center">
+                  <source src={URL.createObjectURL(images[0])} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
               ) : (
-                images.map((image, index) => (
-                  
-                  <div key={index} className="w-[150px] h-[200px] flex items-center justify-center relative m-4 bg-slate-200 dark:bg-slate-800 rounded-md">
-                      <img src={URL.createObjectURL(image)} alt={`image-${index}`}  className="w-full h-full object-contain object-center"/>
-                      <button className="text-slate-500 dark:text-slate-300 absolute right-2 top-2 w-10 h-10 rounded-full bg-slate-300 dark:bg-slate-900 hover:dark:bg-slate-800 hover:bg-slate-100 cursor-pointer flex items-center justify-center">
-                          <X onClick={() => removeImage(index)} size={16}/>
-                      </button>
-                  </div>
-                  
-                ))  
-              )
-              }
-          </div>)
+                <img src={URL.createObjectURL(images[0])} alt={`image-0`} className="w-full h-full object-contain object-center" />
+              )}
+              <button className="text-slate-500 dark:text-slate-300 absolute right-2 top-2 w-10 h-10 rounded-full bg-slate-300 dark:bg-slate-900 hover:dark:bg-slate-800 hover:bg-slate-100 cursor-pointer flex items-center justify-center">
+                <X onClick={() => removeImage(0)} size={16} />
+              </button>
+            </div>
+          ) : (
+            images.map((image, index) => (
+              <div key={index} className="w-[150px] h-[200px] flex items-center justify-center relative m-4 bg-slate-200 dark:bg-slate-800 rounded-md">
+                {isVideo(image) ? (
+                  <video autoPlay loop muted className="w-full h-full object-contain object-center">
+                    <source src={URL.createObjectURL(image)} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <img src={URL.createObjectURL(image)} alt={`image-${index}`} className="w-full h-full object-contain object-center" />
+                )}
+                <button className="text-slate-500 dark:text-slate-300 absolute right-2 top-2 w-10 h-10 rounded-full bg-slate-300 dark:bg-slate-900 hover:dark:bg-slate-800 hover:bg-slate-100 cursor-pointer flex items-center justify-center">
+                  <X onClick={() => removeImage(index)} size={16} />
+                </button>
+              </div>
+            ))
+          )}
+        </div>)
       }
     </>
   )

@@ -1,8 +1,13 @@
 import express from "express";
 import type {Request, Response} from "express";
+import fs from "fs";
+// middleware
+import {upload} from "../middleware/uploadImage";
+import {cookieJwtAuth} from "../middleware/cookieJwtAuth";
 
 // service
 import * as PostService from "./post.service";
+import * as MediaService from "../Media/media.service";
 
 const postRouter = express.Router();
 
@@ -23,34 +28,28 @@ postRouter.get("/posts/:id", async (req: Request, res: Response) => {
 });
 
 // create post
-postRouter.post('/posts', async (req: Request, res: Response) => {
-    const postData = async (data: any) => {
-        try {
-            const post = await PostService.createPost(data);
-            res.status(201).json(post);
+postRouter.post('/posts', cookieJwtAuth, async (req: Request, res: Response) => {
+    
+    const user_id: string = req.body.user_id;
+    const description: string = req.body.description;
 
-        } catch (err: any) {
-            res.status(500).json(err.message);
-        }
-    };
+    const data = { user_id, description };
+    const post = await PostService.createPost(data);
 
-    let data = {};
-    if (req.body.medias) {
-        const user_id: string = req.body.user_id;
-        const description: string = req.body.description;
-        const medias: any[] = req.body.medias;
-        data = { user_id, description, media: medias };
-        postData(data);
-    } else {
-        const user_id: string = req.body.user_id;
-        const description: string = req.body.description;
-        data = { user_id, description };
-        postData(data);
-    }
+    res.status(201).json(post);
+      
 });
 
 // delete post
-postRouter.delete("/posts/:id", async (req: Request, res: Response) => {
+postRouter.delete("/posts/:id", cookieJwtAuth, async (req: Request, res: Response) => {
+    const srcs = await MediaService.deleteMediaByPostId(req.params.id);
+    // delete from the medias folder
+    if(srcs) {
+        for(let i = 0; i < srcs.length; i++) {
+            const src = srcs[i];
+            fs.unlinkSync(`./medias/${src}`);
+        }
+    }
     const post = await PostService.deletePost(req.params.id);
     res.status(200).json(post);
 });

@@ -62,7 +62,6 @@ function Home() {
     
         // Update the state with new posts
         setPosts(prevPosts => [...prevPosts, ...newPosts]);
-        console.log(posts)
     }
 
     // lifecycle
