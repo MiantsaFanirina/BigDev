@@ -29,7 +29,7 @@ export default function postCard({post, getPosts}) {
     const [postUser, setPostUser] = useState(null)
     const [likeUser, setLikeUser] = useState('')
     const [showFullDescription, setShowFullDescription] = useState(false)
-    
+    const [mediaCount, setMediaCount] = useState(0)
 
     // get the post user
     const getUser = async () => {
@@ -40,31 +40,45 @@ export default function postCard({post, getPosts}) {
     // get All the post likes
     const getPostLikes = async () => {
         // Introduce a 500ms delay
-        await new Promise(resolve => setTimeout(resolve,500));
-    
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         const likes = await getLikesByPostId(post.id);
-    
+
         if (likes.length === 0) {
             setLikeUser('Aucun like');
             return;
         }
-    
+
+        const currentUserLiked = likes.some(like => like.user_id === user.id);
+
         const userNames = await Promise.all(
-            likes.slice(0, 2).map(async (like) => {
-                const user = await getUserById(like.user_id);
-                return user.name;
+            likes.map(async (like) => {
+                const liker = await getUserById(like.user_id);
+                return liker.id === user.id ? 'Vous' : liker.name;
             })
         );
-    
+
         const numberOfLikes = likes.length;
-    
-        if (numberOfLikes === 1) {
-            setLikeUser(`${userNames[0]}`);
-        } else if (numberOfLikes === 2) {
-            setLikeUser(`${userNames.join(' et ')}`);
+
+        if (currentUserLiked) {
+            const otherLikedList = userNames.filter(name => name !== 'Vous');
+            if (otherLikedList.length === 0) {
+                setLikeUser('Vous');
+            } else if (otherLikedList.length === 1) {
+                setLikeUser(`Vous et ${otherLikedList[0]}`);
+            } else {
+                const remainingCount = otherLikedList.length - 1;
+                setLikeUser(`Vous, ${otherLikedList.slice(0, 1).join(', ')} et ${remainingCount} autre${remainingCount === 1 ? '' : 's'}`);
+            }
         } else {
-            const remainingCount = numberOfLikes - 2;
-            setLikeUser(`${userNames.join(', ')} et ${remainingCount} autres`);
+            if (numberOfLikes === 1) {
+                setLikeUser(`${userNames[0]}`);
+            } else if (numberOfLikes === 2) {
+                setLikeUser(`${userNames.join(' et ')}`);
+            } else {
+                const remainingCount = numberOfLikes - 2;
+                setLikeUser(`${userNames.slice(0, 2).join(', ')} et ${remainingCount} autre${remainingCount === 1 ? '' : 's'}`);
+            }
         }
     };
     
@@ -137,61 +151,62 @@ export default function postCard({post, getPosts}) {
     }
 
     return (
-        <div className="md:w-[768px] w-full bg-white dark:bg-slate-900 md:rounded md:shadow flex flex-col mb-8">
-                    
-            {/* card-header */}
-            <div className="flex justify-between mx-10 mt-10 mb-6">
-
-                {/* profile section */}
-                <div className="flex">
-                    <div className="bg-slate-500 w-[40px] h-[40px] rounded-full overflow-hidden">
-                        <img src={postUser?.profile_picture_url === "" ? defaultProfile : ""} alt="default profile picture" className="w-full h-full object-cover object-center"/>
-                    </div>
-
-                    <div className="ml-4 flex flex-col justify-center">
-                        <h1 className="font-semibold text-lg dark:text-slate-50">{postUser?.name}</h1>
-                        <p className="text-sm text-slate-500">publié le {formaterDate(post.createdAt)}</p>
-                    </div>
-                </div>
-
-                {post?.user_id === user?.id ?<div onClick={async () => await removePost(post?.id)} className="flex items-center justify-center text-slate-500 w-10 h-10 rounded-full hover:bg-slate-100 cursor-pointer">
-                    <X /> 
-                </div> : null}
-
-            </div>
-                        
-            {/* description */}
-            {/* See more render option */}
-            <p className="flex flex-col mb-10 mx-10 dark:text-slate-300">
-
-
-                {/* Render condition of description */}
-                {showFullDescription ? initialDescription : sliceDescription}
+        <div className="md:w-[768px] w-full bg-white dark:bg-slate-900 md:rounded md:shadow flex flex-col mb-8 relative">
+            <div className="w-full flex flex-col relative">
                 
-                {/* handle the "voir plus..." and "voir moins" render */}
-                {isLongDescription && initialDescriptionWords.length >= maxWords && !showFullDescription ? (
-                    <span
-                        className="text-pink-500 cursor-pointer"
-                        onClick={toggleDescription}
-                    >
-                        voir plus...
-                    </span>
-                ) : (
-                    isLongDescription && initialDescriptionWords.length >= maxWords && (
+                {mediaCount === 0 ? null : <span className="absolute bottom-0 right-0 text-sm text-white px-3 py-1 bg-slate-500 rounded-tl-md opacity-75">{mediaCount}</span>}    
+                {/* card-header */}
+                <div className="flex justify-between mx-10 mt-10 mb-6">
+
+                    {/* profile section */}
+                    <div className="flex">
+                        <div className="bg-slate-500 w-[40px] h-[40px] rounded-full overflow-hidden">
+                            <img src={postUser?.profile_picture_url === "" ? defaultProfile : ""} alt="default profile picture" className="w-full h-full object-cover object-center"/>
+                        </div>
+
+                        <div className="ml-4 flex flex-col justify-center">
+                            <h1 className="font-semibold text-lg dark:text-slate-50">{postUser?.name}</h1>
+                            <p className="text-sm text-slate-500">publié le {formaterDate(post.createdAt)}</p>
+                        </div>
+                    </div>
+
+                    {post?.user_id === user?.id ?<div onClick={async () => await removePost(post?.id)} className="flex items-center justify-center text-slate-500 w-10 h-10 rounded-full hover:bg-slate-100 cursor-pointer">
+                        <X /> 
+                    </div> : null}
+
+                </div>
+                            
+                {/* description */}
+                {/* See more render option */}
+                <p className="flex flex-col mb-10 mx-10 dark:text-slate-300 relative">
+
+
+                    {/* Render condition of description */}
+                    {showFullDescription ? initialDescription : sliceDescription}
+                    
+                    {/* handle the "voir plus..." and "voir moins" render */}
+                    {isLongDescription && initialDescriptionWords.length >= maxWords && !showFullDescription ? (
                         <span
                             className="text-pink-500 cursor-pointer"
                             onClick={toggleDescription}
                         >
-                            voir moins
+                            voir plus...
                         </span>
-                    )
-                )}
-
-            </p>
-
+                    ) : (
+                        isLongDescription && initialDescriptionWords.length >= maxWords && (
+                            <span
+                                className="text-pink-500 cursor-pointer"
+                                onClick={toggleDescription}
+                            >
+                                voir moins
+                            </span>
+                        )
+                    )}
+                </p>
+            </div>
             {/* image section */}
-            {post?.media[0] ? <div className="w-full h-[500px] max-h-[300px] bg-slate-300 mb-6 overflow-hidden">
-                <PostSlider media={post?.media}></PostSlider>  
+            {post?.media[0] ? <div className="w-full h-[500px] relative  bg-slate-300 mb-6 overflow-hidden">
+                <PostSlider media={post?.media} setMediaCount={setMediaCount}></PostSlider>  
             </div> : null}
 
             {/* like section */}

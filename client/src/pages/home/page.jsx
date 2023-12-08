@@ -106,16 +106,8 @@ function Home() {
         setShowAddPostModal(!showAddPostModal)
     }
 
-    
-    const toggleDarkMode = () => {
-        document.documentElement.classList.toggle("dark")
-    }
-
-
     return (
-        <div className="w-full h-full flex flex-col items-center md:p-10 p-4 overflow-x-hidden overflow-y-scroll relative">
-
-            <button onClick={toggleDarkMode} className="text-white absolte right-0 top-0">Switch dark mode</button>
+        <div className="w-full h-full md:mt-16 mt-20 flex flex-col items-center md:p-10 p-4 overflow-x-hidden relative">
 
             {/* add post */}
             <div className="px-10 md:w-[768px] w-full h-auto md:rounded md:shadow mb-8 dark:bg-slate-900 bg-white flex flex-col">
